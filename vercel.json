@@ -1,0 +1,14 @@
+{
+    "builds": [
+      {
+        "src": "package.json",
+        "use": "@vercel/node"
+      }
+    ],
+    "functions": {
+      "api/**/*": {
+        "runtime": "nodejs18.x",
+        "includeFiles": "node_modules/puppeteer/**/*"
+      }
+    }
+  }

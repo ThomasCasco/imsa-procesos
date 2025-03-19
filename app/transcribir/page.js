@@ -589,7 +589,11 @@ export default function Transcribir() {
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-        <img src="/logo_rojo.png" alt="IMSA" style={{ height: "200px" , alignItems: "center", justifyContent: "center", marginLeft: "33%"}} />
+      <img 
+            src="/logo_rojo.png" 
+            alt="Banner descriptivo" 
+            style={{ display: "block", margin: "0 auto 1rem", maxWidth: "50%" }} 
+        />
         <h1 style={titleStyle}>IMSA + Procesos</h1>
         <p style={subtitleStyle}>Cree y mejore documentos de procedimientos con asistencia de IA</p>
         <div style={progressContainerStyle}>

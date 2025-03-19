@@ -47,7 +47,7 @@ export async function POST(request) {
       <body>
         <div class="header">
           <div class="header-left">
-            <img src="/logo.png" alt="I.M.S.A." />
+            <img src="https://imsa.com.ar/wp-content/uploads/2020/06/IMSA_Logo_rojo_02.png" alt="I.M.S.A." />
           </div>
           <div>PROCEDIMIENTO</div>
           <div class="header-right">

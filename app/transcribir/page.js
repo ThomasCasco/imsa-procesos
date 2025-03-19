@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 // If you have Lucide icons installed, uncomment this line:
 // import { Mic, FileText, Save, ArrowLeft, ArrowRight, Sparkles, Download } from 'lucide-react';
 
 export default function Transcribir() {
+  const [showIntro, setShowIntro] = useState(true)
   const [seccionActual, setSeccionActual] = useState(0)
   const [documento, setDocumento] = useState({
     objeto: "",
@@ -24,6 +25,15 @@ export default function Transcribir() {
   const [processingAI, setProcessingAI] = useState(false)
   const [generatingPDF, setGeneratingPDF] = useState(false)
   const [activeTab, setActiveTab] = useState("resumen")
+
+  // Animation timing effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowIntro(false)
+    }, 3000) // 3 seconds for the intro animation
+
+    return () => clearTimeout(timer)
+  }, [])
 
   const secciones = [
     { nombre: "Objeto", clave: "objeto" },
@@ -227,6 +237,42 @@ export default function Transcribir() {
       <line x1="12" x2="12" y1="15" y2="3"></line>
     </svg>
   )
+
+  // Intro animation styles
+  const introContainerStyle = {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#F1291C",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 9999,
+    transition: "opacity 0.5s ease-in-out",
+    opacity: showIntro ? 1 : 0,
+    pointerEvents: showIntro ? "all" : "none",
+  }
+
+  const introTitleStyle = {
+    fontSize: "3rem",
+    fontWeight: "bold",
+    color: "white",
+    marginBottom: "1rem",
+    textAlign: "center",
+    animation: "fadeInUp 0.8s ease-out",
+  }
+
+  const introSubtitleStyle = {
+    fontSize: "1.5rem",
+    color: "white",
+    opacity: 0.9,
+    textAlign: "center",
+    animation: "fadeInUp 0.8s ease-out 0.3s forwards",
+    opacity: 0,
+  }
 
   const containerStyle = {
     maxWidth: "1200px",
@@ -587,222 +633,253 @@ export default function Transcribir() {
   }
 
   return (
-    <div style={containerStyle}>
-      <div style={headerStyle}>
-      <img 
-            src="/logo_rojo.png" 
-            alt="Banner descriptivo" 
-            style={{ display: "block", margin: "0 auto 1rem", maxWidth: "50%" }} 
-        />
-        <h1 style={titleStyle}>IMSA + Procesos</h1>
-        <p style={subtitleStyle}>Cree y mejore documentos de procedimientos con asistencia de IA</p>
-        <div style={progressContainerStyle}>
-          <div style={progressBarStyle}></div>
+    <>
+      {/* Intro Animation */}
+      <div style={introContainerStyle}>
+        <style jsx>{`
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          @keyframes pulse {
+            0% {
+              transform: scale(1);
+            }
+            50% {
+              transform: scale(1.05);
+            }
+            100% {
+              transform: scale(1);
+            }
+          }
+        `}</style>
+        <div style={{ animation: "pulse 2s infinite ease-in-out" }}>
+          <h1 style={introTitleStyle}>IMSA + Procesos</h1>
         </div>
-        <p style={progressTextStyle}>Progreso: {Math.round(calcularProgreso())}% completado</p>
+        <p style={introSubtitleStyle}>Impulsado por IA</p>
       </div>
 
-      <div style={{ marginBottom: "1.5rem" }}>
-        <div style={cardStyle}>
-          <div style={cardHeaderStyle}>
-            <div style={cardHeaderFlexStyle}>
-              <div>
-                <h2 style={cardTitleStyle}>Sección: {secciones[seccionActual].nombre}</h2>
-                <p style={cardSubtitleStyle}>
-                  Paso {seccionActual + 1} de {secciones.length}
-                </p>
+      {/* Main Application */}
+      <div style={containerStyle}>
+        <div style={headerStyle}>
+          <img
+            src="/logo_rojo.png"
+            alt="Banner descriptivo"
+            style={{ display: "block", margin: "0 auto 1rem", maxWidth: "50%" }}
+          />
+          <h1 style={titleStyle}>IMSA + Procesos</h1>
+          <p style={subtitleStyle}>Cree y mejore documentos de procedimientos con asistencia de IA</p>
+          <div style={progressContainerStyle}>
+            <div style={progressBarStyle}></div>
+          </div>
+          <p style={progressTextStyle}>Progreso: {Math.round(calcularProgreso())}% completado</p>
+        </div>
+
+        <div style={{ marginBottom: "1.5rem" }}>
+          <div style={cardStyle}>
+            <div style={cardHeaderStyle}>
+              <div style={cardHeaderFlexStyle}>
+                <div>
+                  <h2 style={cardTitleStyle}>Sección: {secciones[seccionActual].nombre}</h2>
+                  <p style={cardSubtitleStyle}>
+                    Paso {seccionActual + 1} de {secciones.length}
+                  </p>
+                </div>
+                <span style={badgeStyle}>{documento[secciones[seccionActual].clave] ? "Completado" : "Pendiente"}</span>
               </div>
-              <span style={badgeStyle}>{documento[secciones[seccionActual].clave] ? "Completado" : "Pendiente"}</span>
             </div>
-          </div>
-          <div style={cardContentStyle}>
-            <div>
-              <button
-                onClick={empezarGrabacion}
-                disabled={grabando}
-                style={grabando ? buttonRecordingStyle : buttonPrimaryStyle}
-              >
-                {/* Use the imported icon if available, otherwise use the SVG */}
-                {/* {grabando ? <Mic /> : <Mic />} */}
-                <IconMic />
-                {grabando ? "Grabando..." : "Iniciar Grabación de Voz"}
-              </button>
-            </div>
-            <div>
-              <textarea
-                value={textoTemporal}
-                onChange={(e) => setTextoTemporal(e.target.value)}
-                placeholder="Habla o escribe aquí el contenido de esta sección..."
-                style={textareaStyle}
-              />
-            </div>
-            <div style={buttonGroupStyle}>
-              <button
-                onClick={mejorarConIA}
-                disabled={!textoTemporal || processingAI}
-                style={{
-                  ...buttonOutlineStyle,
-                  opacity: !textoTemporal || processingAI ? 0.5 : 1,
-                  cursor: !textoTemporal || processingAI ? "default" : "pointer",
-                }}
-              >
-                {/* {processingAI ? <Sparkles /> : <Sparkles />} */}
-                <IconSparkles />
-                {processingAI ? "Procesando..." : "Mejorar con IA"}
-              </button>
-              <button
-                onClick={guardarTexto}
-                disabled={!textoTemporal}
-                style={{
-                  ...buttonSuccessStyle,
-                  opacity: !textoTemporal ? 0.5 : 1,
-                  cursor: !textoTemporal ? "default" : "pointer",
-                }}
-              >
-                {/* <Save /> */}
-                <IconSave />
-                Guardar
-              </button>
-            </div>
-          </div>
-          <div style={cardFooterStyle}>
-            <button
-              onClick={seccionAnterior}
-              disabled={seccionActual === 0}
-              style={seccionActual === 0 ? navButtonDisabledStyle : navButtonStyle}
-            >
-              {/* <ArrowLeft /> */}
-              <IconArrowLeft />
-              Anterior
-            </button>
-            <button
-              onClick={siguienteSeccion}
-              disabled={seccionActual === secciones.length - 1}
-              style={seccionActual === secciones.length - 1 ? navButtonPrimaryDisabledStyle : navButtonPrimaryStyle}
-            >
-              Siguiente
-              {/* <ArrowRight /> */}
-              <IconArrowRight />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "1.5rem" }}>
-        <div style={cardStyle}>
-          <div style={grayCardHeaderStyle}>
-            <h2 style={cardTitleStyle}>Navegación Rápida</h2>
-            <p style={cardSubtitleStyle}>Seleccione una sección para editar</p>
-          </div>
-          <div style={{ ...cardContentStyle, padding: "1rem" }}>
-            <div style={navButtonsContainerStyle}>
-              {secciones.map((seccion, index) => (
+            <div style={cardContentStyle}>
+              <div>
                 <button
-                  key={index}
-                  onClick={() => irASeccion(index)}
-                  style={seccionActual === index ? sectionNavButtonActiveStyle : sectionNavButtonStyle}
+                  onClick={empezarGrabacion}
+                  disabled={grabando}
+                  style={grabando ? buttonRecordingStyle : buttonPrimaryStyle}
                 >
-                  <span style={sectionNumberStyle}>{index + 1}</span>
-                  <span>{seccion.nombre}</span>
-                  {documento[seccion.clave] && <span style={sectionCompleteBadgeStyle}>✓</span>}
+                  <IconMic />
+                  {grabando ? "Grabando..." : "Iniciar Grabación de Voz"}
                 </button>
-              ))}
+              </div>
+              <div>
+                <textarea
+                  value={textoTemporal}
+                  onChange={(e) => setTextoTemporal(e.target.value)}
+                  placeholder="Habla o escribe aquí el contenido de esta sección..."
+                  style={textareaStyle}
+                />
+              </div>
+              <div style={buttonGroupStyle}>
+                <button
+                  onClick={mejorarConIA}
+                  disabled={!textoTemporal || processingAI}
+                  style={{
+                    ...buttonOutlineStyle,
+                    opacity: !textoTemporal || processingAI ? 0.5 : 1,
+                    cursor: !textoTemporal || processingAI ? "default" : "pointer",
+                  }}
+                >
+                  <IconSparkles />
+                  {processingAI ? "Procesando..." : "Mejorar con IA"}
+                </button>
+                <button
+                  onClick={guardarTexto}
+                  disabled={!textoTemporal}
+                  style={{
+                    ...buttonSuccessStyle,
+                    opacity: !textoTemporal ? 0.5 : 1,
+                    cursor: !textoTemporal ? "default" : "pointer",
+                  }}
+                >
+                  <IconSave />
+                  Guardar
+                </button>
+              </div>
+            </div>
+            <div style={cardFooterStyle}>
+              <button
+                onClick={seccionAnterior}
+                disabled={seccionActual === 0}
+                style={seccionActual === 0 ? navButtonDisabledStyle : navButtonStyle}
+              >
+                <IconArrowLeft />
+                Anterior
+              </button>
+              <button
+                onClick={siguienteSeccion}
+                disabled={seccionActual === secciones.length - 1}
+                style={seccionActual === secciones.length - 1 ? navButtonPrimaryDisabledStyle : navButtonPrimaryStyle}
+              >
+                Siguiente
+                <IconArrowRight />
+              </button>
             </div>
           </div>
         </div>
 
-        <div style={cardStyle}>
-          <div style={cardHeaderStyle}>
-            <h2 style={cardTitleStyle}>Datos de Aprobación</h2>
-            <p style={cardSubtitleStyle}>Información para el documento final</p>
-          </div>
-          <div style={cardContentStyle}>
-            <div style={formGroupStyle}>
-              <label style={labelStyle}>Preparado por:</label>
-              <input
-                type="text"
-                value={aprobaciones.preparadoPor}
-                onChange={(e) => setAprobaciones((prev) => ({ ...prev, preparadoPor: e.target.value }))}
-                style={inputStyle}
-              />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "1.5rem" }}>
+          <div style={cardStyle}>
+            <div style={grayCardHeaderStyle}>
+              <h2 style={cardTitleStyle}>Navegación Rápida</h2>
+              <p style={cardSubtitleStyle}>Seleccione una sección para editar</p>
             </div>
-            <div style={formGroupStyle}>
-              <label style={labelStyle}>Revisado por:</label>
-              <input
-                type="text"
-                value={aprobaciones.revisadoPor}
-                onChange={(e) => setAprobaciones((prev) => ({ ...prev, revisadoPor: e.target.value }))}
-                style={inputStyle}
-              />
-            </div>
-            <div style={formGroupStyle}>
-              <label style={labelStyle}>Aprobado por:</label>
-              <input
-                type="text"
-                value={aprobaciones.aprobadoPor}
-                onChange={(e) => setAprobaciones((prev) => ({ ...prev, aprobadoPor: e.target.value }))}
-                style={inputStyle}
-              />
-            </div>
-            <div style={formGroupStyle}>
-              <label style={labelStyle}>Revisión N°:</label>
-              <input
-                type="text"
-                value={aprobaciones.revision}
-                onChange={(e) => setAprobaciones((prev) => ({ ...prev, revision: e.target.value }))}
-                style={inputStyle}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style={tabsContainerStyle}>
-        <div style={tabsHeaderStyle}>
-          <button onClick={() => setActiveTab("resumen")} style={activeTab === "resumen" ? tabActiveStyle : tabStyle}>
-            Resumen del Documento
-          </button>
-          <button onClick={() => setActiveTab("acciones")} style={activeTab === "acciones" ? tabActiveStyle : tabStyle}>
-            Acciones Finales
-          </button>
-        </div>
-        <div style={tabContentStyle}>
-          {activeTab === "resumen" ? (
-            <div>
-              <h3 style={sectionTitleStyle}>Vista Previa del Documento</h3>
-              <div style={sectionContainerStyle}>
+            <div style={{ ...cardContentStyle, padding: "1rem" }}>
+              <div style={navButtonsContainerStyle}>
                 {secciones.map((seccion, index) => (
-                  <div key={index} style={sectionItemStyle}>
-                    <h4 style={sectionItemTitleStyle}>{seccion.nombre}</h4>
-                    {documento[seccion.clave] ? (
-                      <p style={sectionItemContentStyle}>{documento[seccion.clave]}</p>
-                    ) : (
-                      <p style={sectionItemEmptyStyle}>No completado</p>
-                    )}
-                  </div>
+                  <button
+                    key={index}
+                    onClick={() => irASeccion(index)}
+                    style={seccionActual === index ? sectionNavButtonActiveStyle : sectionNavButtonStyle}
+                  >
+                    <span style={sectionNumberStyle}>{index + 1}</span>
+                    <span>{seccion.nombre}</span>
+                    {documento[seccion.clave] && <span style={sectionCompleteBadgeStyle}>✓</span>}
+                  </button>
                 ))}
               </div>
             </div>
-          ) : (
-            <div style={actionCenterStyle}>
-              <h3 style={sectionTitleStyle}>Finalizar Documento</h3>
-              <p style={actionDescriptionStyle}>
-                Una vez que haya completado todas las secciones, puede generar el documento PDF final.
-              </p>
-              <button
-                onClick={generarPDF}
-                disabled={generatingPDF}
-                style={generatingPDF ? generateButtonDisabledStyle : generateButtonStyle}
-              >
-                {/* <Download /> */}
-                <IconDownload />
-                {generatingPDF ? "Generando PDF..." : "Generar PDF"}
-              </button>
+          </div>
+
+          <div style={cardStyle}>
+            <div style={cardHeaderStyle}>
+              <h2 style={cardTitleStyle}>Datos de Aprobación</h2>
+              <p style={cardSubtitleStyle}>Información para el documento final</p>
             </div>
-          )}
+            <div style={cardContentStyle}>
+              <div style={formGroupStyle}>
+                <label style={labelStyle}>Preparado por:</label>
+                <input
+                  type="text"
+                  value={aprobaciones.preparadoPor}
+                  onChange={(e) => setAprobaciones((prev) => ({ ...prev, preparadoPor: e.target.value }))}
+                  style={inputStyle}
+                />
+              </div>
+              <div style={formGroupStyle}>
+                <label style={labelStyle}>Revisado por:</label>
+                <input
+                  type="text"
+                  value={aprobaciones.revisadoPor}
+                  onChange={(e) => setAprobaciones((prev) => ({ ...prev, revisadoPor: e.target.value }))}
+                  style={inputStyle}
+                />
+              </div>
+              <div style={formGroupStyle}>
+                <label style={labelStyle}>Aprobado por:</label>
+                <input
+                  type="text"
+                  value={aprobaciones.aprobadoPor}
+                  onChange={(e) => setAprobaciones((prev) => ({ ...prev, aprobadoPor: e.target.value }))}
+                  style={inputStyle}
+                />
+              </div>
+              <div style={formGroupStyle}>
+                <label style={labelStyle}>Revisión N°:</label>
+                <input
+                  type="text"
+                  value={aprobaciones.revision}
+                  onChange={(e) => setAprobaciones((prev) => ({ ...prev, revision: e.target.value }))}
+                  style={inputStyle}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={tabsContainerStyle}>
+          <div style={tabsHeaderStyle}>
+            <button onClick={() => setActiveTab("resumen")} style={activeTab === "resumen" ? tabActiveStyle : tabStyle}>
+              Resumen del Documento
+            </button>
+            <button
+              onClick={() => setActiveTab("acciones")}
+              style={activeTab === "acciones" ? tabActiveStyle : tabStyle}
+            >
+              Acciones Finales
+            </button>
+          </div>
+          <div style={tabContentStyle}>
+            {activeTab === "resumen" ? (
+              <div>
+                <h3 style={sectionTitleStyle}>Vista Previa del Documento</h3>
+                <div style={sectionContainerStyle}>
+                  {secciones.map((seccion, index) => (
+                    <div key={index} style={sectionItemStyle}>
+                      <h4 style={sectionItemTitleStyle}>{seccion.nombre}</h4>
+                      {documento[seccion.clave] ? (
+                        <p style={sectionItemContentStyle}>{documento[seccion.clave]}</p>
+                      ) : (
+                        <p style={sectionItemEmptyStyle}>No completado</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div style={actionCenterStyle}>
+                <h3 style={sectionTitleStyle}>Finalizar Documento</h3>
+                <p style={actionDescriptionStyle}>
+                  Una vez que haya completado todas las secciones, puede generar el documento PDF final.
+                </p>
+                <button
+                  onClick={generarPDF}
+                  disabled={generatingPDF}
+                  style={generatingPDF ? generateButtonDisabledStyle : generateButtonStyle}
+                >
+                  <IconDownload />
+                  {generatingPDF ? "Generando PDF..." : "Generar PDF"}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 

@@ -4,7 +4,8 @@ import axios from "axios";
   export async function POST(request) {
     const { texto, seccion } = await request.json();
   
-    const MISTRAL_API_KEY = "A3PSYm7YSpYR0bDZACljU7YpZMq6NQGg"; // Reemplazá con tu clave de Mistral
+    const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
+    //const MISTRAL_API_KEY = "A3PSYm7YSpYR0bDZACljU7YpZMq6NQGg"; // Reemplazá con tu clave de Mistral
   
     let prompt = "";
     if (seccion === "objeto") {

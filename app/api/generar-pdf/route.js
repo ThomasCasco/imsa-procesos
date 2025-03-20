@@ -4,6 +4,10 @@ import axios from "axios";
 export async function POST(request) {
   const { documento, aprobaciones } = await request.json();
 
+  // Log para depurar los datos recibidos
+  console.log("Datos recibidos - documento:", documento);
+  console.log("Datos recibidos - aprobaciones:", aprobaciones);
+
   const today = new Date();
   const fecha = `${today.getDate().toString().padStart(2, "0")}/${(today.getMonth() + 1)
     .toString()
@@ -23,23 +27,76 @@ export async function POST(request) {
       ? process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : "https://tu-proyecto.vercel.app"
-      : "http://localhost:3000";
+      : "http://localhost:4000"; // Ajusta el puerto si lo cambiaste
 
   const htmlContent = `
     <html>
       <head>
         <style>
-          body { font-family: Arial, sans-serif; margin: 40px 40px 60px 40px; font-size: 12pt; }
-          .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid black; padding-bottom: 5px; margin-bottom: 20px; }
-          .header-left { font-weight: bold; }
-          .header-left img { height: 30px; }
-          .header-right { text-align: right; }
-          .title { text-align: center; font-size: 14pt; font-weight: bold; margin: 20px 0; }
-          .section { margin-bottom: 15px; page-break-inside: auto; }
-          .section-title { font-weight: bold; margin-bottom: 5px; }
-          ul { margin: 0; padding-left: 20px; list-style-type: disc; page-break-inside: auto; }
-          li { page-break-inside: avoid; }
-          .additional-text { margin: 10px 0; font-style: italic; }
+          body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 40px 40px 60px 40px;
+            font-size: 12pt;
+            line-height: 1.4;
+          }
+          .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid black;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+          }
+          .header-left {
+            font-weight: bold;
+          }
+          .header-left img {
+            height: 30px;
+            vertical-align: middle;
+          }
+          .header-center {
+            font-weight: bold;
+            text-align: center;
+            flex: 1;
+          }
+          .header-right {
+            text-align: right;
+            font-size: 10pt;
+          }
+          .title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 20px 0;
+            line-height: 1.2;
+          }
+          .section {
+            margin-bottom: 15px;
+            page-break-inside: auto;
+          }
+          .section-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+          }
+          ul {
+            margin: 0;
+            padding-left: 20px;
+            list-style-type: disc;
+            page-break-inside: auto;
+          }
+          li {
+            page-break-inside: avoid;
+            margin-bottom: 5px;
+          }
+          .additional-text {
+            margin: 10px 0;
+            font-style: italic;
+            font-size: 10pt;
+          }
+          p {
+            margin: 0;
+          }
         </style>
       </head>
       <body>
@@ -47,15 +104,17 @@ export async function POST(request) {
           <div class="header-left">
             <img src="${baseUrl}/logo.png" alt="I.M.S.A." />
           </div>
-          <div>PROCEDIMIENTO</div>
+          <div class="header-center">
+            PROCEDIMIENTO
+          </div>
           <div class="header-right">
             PA 009<br />
             Página <span class="pageNumber"></span> de <span class="totalPages"></span>
           </div>
         </div>
         <div class="title">
-          DOCUMENTACIÓN OBLIGATORIA PARA INGRESAR A REALIZAR TAREAS<br />
-          (Terceros o Sub contratados)
+          IMSA PROCESOS - CAMBIAR TITULO<br />
+          para subir imagenes a este pdf use: https://www.canva.com/
         </div>
         <div class="section">
           <div class="section-title">1. OBJETO</div>
@@ -111,7 +170,7 @@ export async function POST(request) {
     </div>
   `;
 
-  // 🎯 Llamada a Browserless
+  // Llamada a Browserless
   try {
     const pdfResponse = await axios.post(
       `https://chrome.browserless.io/pdf?token=${process.env.BROWSERLESS_TOKEN}`,
@@ -128,7 +187,7 @@ export async function POST(request) {
           },
           displayHeaderFooter: true,
           headerTemplate: "<span></span>",
-          footerTemplate,
+          footerTemplate: footerTemplate,
         },
       },
       { responseType: "arraybuffer" }
@@ -142,6 +201,9 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error("Error al generar PDF:", error);
-    return new NextResponse("Error al generar el PDF", { status: 500 });
+    return new NextResponse(
+      JSON.stringify({ error: "Failed to generate PDF", details: error.message }),
+      { status: 500 }
+    );
   }
 }

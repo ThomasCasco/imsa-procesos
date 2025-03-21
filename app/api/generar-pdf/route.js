@@ -114,7 +114,6 @@ export async function POST(request) {
         </div>
         <div class="title">
           IMSA PROCESOS - CAMBIAR TITULO<br />
-          para subir imagenes a este pdf use: https://www.canva.com/
         </div>
         <div class="section">
           <div class="section-title">1. OBJETO</div>

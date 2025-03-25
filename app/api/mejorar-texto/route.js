@@ -26,7 +26,7 @@ import axios from "axios";
         {
           model: "mistral-small-latest",
           messages: [{ role: "user", content: prompt }],
-          max_tokens: 10000,
+          max_tokens: 32000,
           temperature: 0.7,
         },
         {
